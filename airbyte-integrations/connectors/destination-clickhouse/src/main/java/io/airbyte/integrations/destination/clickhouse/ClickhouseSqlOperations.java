@@ -113,7 +113,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                                       final String schemaName,
                                       final String tmpTableName)
             throws SQLException {
-        LOGGER.info("actual size of batch: {}", records.size());
+        LOGGER.info("actual size of batch: {}, tmpTableName: ", records.size(), tmpTableName);
 
         if (records.isEmpty()) {
             return;
@@ -132,7 +132,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                         .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
                         .format(ClickHouseFormat.CSV) // set a format
                         .data(tmpFile.getAbsolutePath()) // specify input
-                        .send();
+                        .send()
+                        .thenRun(() -> optimizeTable(conn, schemaName, tmpTableName));
 
             } catch (final Exception e) {
                 primaryException = e;
@@ -148,10 +149,9 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                     throw new RuntimeException(e);
                 }
             }
+
         });
 
-        // optimize table after successfully inserted
-        optimizeTable(database, schemaName, tmpTableName);
     }
 
     @Override
@@ -188,17 +188,34 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
     }
 
     /**
-     * Optimizes a table in the given database by deduplicating and finalizing it.
+     * Optimizes a table in the ClickHouse database.
      *
-     * @param database    the JDBC database connection
-     * @param schemaName  the name of the schema containing the table
-     * @param tableName   the name of the table to optimize
-     * @throws SQLException if an error occurs while executing the optimization query
+     * @param conn        The ClickHouse connection.
+     * @param schemaName  The name of the schema.
+     * @param tableName   The name of the table.
      */
-    protected void optimizeTable(final JdbcDatabase database,
-                                 final String schemaName,
-                                 final String tableName) throws SQLException {
-        database.execute(String.format("optimize table `%s`.`%s` final deduplicate;\n", schemaName, tableName));
+    private void optimizeTable(final ClickHouseConnection conn,
+                               final String schemaName,
+                               final String tableName) {
+        try {
+            //noinspection SqlSourceToSinkFlow
+            conn.createStatement()
+                    .execute(optimizeTableQuery(schemaName, tableName));
+        } catch (SQLException e) {
+            LOGGER.error(e.getSQLState());
+        }
+    }
+
+    /**
+     * Generates an optimize table query for a given table in the database schema.
+     *
+     * @param schemaName The name of the schema.
+     * @param tableName  The name of the table.
+     * @return The optimize table query as a String.
+     */
+    protected String optimizeTableQuery(final String schemaName,
+                                        final String tableName) {
+        return String.format("optimize table `%s`.`%s` final deduplicate;\n", schemaName, tableName);
     }
 
 }
