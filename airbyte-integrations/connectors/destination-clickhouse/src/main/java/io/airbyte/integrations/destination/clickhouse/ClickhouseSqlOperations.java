@@ -113,7 +113,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                                       final String schemaName,
                                       final String tmpTableName)
             throws SQLException {
-        LOGGER.info("actual size of batch: {}, tmpTableName: ", records.size(), tmpTableName);
+        LOGGER.info("actual size of batch: {}, tmpTableName: {}", records.size(), tmpTableName);
 
         if (records.isEmpty()) {
             return;
