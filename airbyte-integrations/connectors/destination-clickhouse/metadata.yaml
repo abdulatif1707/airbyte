@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: f040a9d7-406c-4814-b528-7680f26c77cd
-  dockerImageTag: 1.0.3
+  dockerImageTag: 1.0.5
   dockerRepository: airbyte/destination-clickhouse
   githubIssueLabel: destination-clickhouse
   icon: clickhouse.svg
@@ -16,7 +16,7 @@ data:
       enabled: true
   releases:
     breakingChanges:
-      1.0.3:
+      1.0.5:
         upgradeDeadline: "2024-03-15"
         message: >
           This version removes the option to use "normalization" with clickhouse. It also changes

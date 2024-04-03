@@ -149,6 +149,9 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                 }
             }
         });
+
+        // optimize table after successfully inserted
+        optimizeTable(database, schemaName, tmpTableName);
     }
 
     @Override
@@ -182,6 +185,20 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
     private String extractAsString(JsonNode node, String key) {
         return node.findValuesAsText(key).stream().findFirst().orElse(null);
+    }
+
+    /**
+     * Optimizes a table in the given database by deduplicating and finalizing it.
+     *
+     * @param database    the JDBC database connection
+     * @param schemaName  the name of the schema containing the table
+     * @param tableName   the name of the table to optimize
+     * @throws SQLException if an error occurs while executing the optimization query
+     */
+    protected void optimizeTable(final JdbcDatabase database,
+                                 final String schemaName,
+                                 final String tableName) throws SQLException {
+        database.execute(String.format("optimize table `%s`.`%s` final deduplicate;\n", schemaName, tableName));
     }
 
 }
