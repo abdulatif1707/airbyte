@@ -145,6 +145,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                 } catch (final IOException e) {
                     if (primaryException != null)
                         e.addSuppressed(primaryException);
+                    //noinspection ThrowFromFinallyBlock
                     throw new RuntimeException(e);
                 }
             }
