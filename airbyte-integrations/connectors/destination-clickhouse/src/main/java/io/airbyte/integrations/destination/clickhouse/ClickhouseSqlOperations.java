@@ -132,8 +132,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
                         .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
                         .format(ClickHouseFormat.CSV) // set a format
                         .data(tmpFile.getAbsolutePath()) // specify input
-                        .send()
-                        .thenRun(() -> optimizeTable(conn, schemaName, tmpTableName));
+                        .send();
 
             } catch (final Exception e) {
                 primaryException = e;
@@ -194,6 +193,7 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
      * @param schemaName  The name of the schema.
      * @param tableName   The name of the table.
      */
+    @SuppressWarnings("unused")
     private void optimizeTable(final ClickHouseConnection conn,
                                final String schemaName,
                                final String tableName) {
